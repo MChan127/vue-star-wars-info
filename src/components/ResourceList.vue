@@ -4,29 +4,47 @@
             &plus; {{ 'List of ' + title }}
         </h3>
 
+        <loading-anim :show="loading && resources === null" />
         <div class="resource-list__container"
             :class="{hidden}">
-            <div class="loading" v-if="loading && resources === null">
-                <!-- TODO loading animation -->
-            </div>
             <ul class="resource-list__list">
                 <li v-for="resource in resources" 
                     :key="title + '_' + (resource.name ? resource.name : resource.title)"
-                    @click="handleClick"
+                    @click="handleClickItem"
                 >
-                    <ResourceListItem :resource="resource" />
+                    <resource-list-item :resource="resource" :type="type" />
                 </li>
             </ul>
         </div>
     </div>
 </template>
 
+<style scoped>
+.resource-list__container.hidden {
+    display: none;
+}
+.resource-list__list {
+    list-style-type: none;
+}
+</style>
+
 <script>
 import {axiosGet as get} from "@/utils/global";
+import {mapGetters, mapActions, mapMutations} from "vuex";
+import ResourceListItem from "@/components/ResourceListItem.vue";
+import LoadingAnim from "@/components/LoadingAnim";
 
 export default {
+    components: {
+        'resource-list-item': ResourceListItem,
+        'loading-anim': LoadingAnim,
+    },
     props: {
         title: {
+            type: String,
+            required: true,
+        },
+        type: {
             type: String,
             required: true,
         },
@@ -48,50 +66,56 @@ export default {
             hidden: !this.forceShow,
         };
     },
-    mounted: function() {
-
+    computed: {
+        ...mapGetters([
+            'getResource',
+        ]),
     },
     methods: {
-        handleClick() {
+        ...mapActions([
+            'fetchResource',
+            'addError',
+        ]),
+        ...mapMutations([
+            'addError',
+        ]),
+        async handleClick() {
             if (this.resources === null) {
+                const that = this;
                 this.loading = true;
-                this.fetchResources();
+
+                // this is potentially a ton of api calls
+                // therefore we run them all asynchronously and
+                // chain the getter to each request as well
+                let promises = [];
+                for (let path of this.resourcePaths) {
+                    let parts = path.split('/');
+                    if (parts.length != 3) {
+                        continue;
+                    }
+                    let id = parts[1],
+                        type = parts[0];
+                    promises.push(((type, id) => {
+                        return new Promise((fulfill, reject) => {
+                            that.fetchResource({type, id}).then(() => {
+                                fulfill(that.getResource(type, id));
+                            }, err => {
+                                that.addError(err);
+                                reject();
+                            });
+                        });
+                    })(type, id));
+                }
+                // finally assign to state once everything has loaded
+                this.resources = await Promise.all(promises);
+                this.loading = false;
             }
             if (!this.forceShow) {
                 this.hidden = !this.hidden;
             }
         },
-        async fetchResources() {
-            const fetched = [];
-            for (let i = 0; i < this.resourcePaths.length; i++) {
-                let path = this.resourcePaths[i];
-
-                // try to get the existing resource from store
-                let data = this.$store.getters.getResource(resourcePath);
-
-                // if data empty in store
-                if (!data) {
-                    try {
-                        data = await get(path, {promisify: true});
-                    } catch (e) {
-                        this.$store.errors.push(`Error fetching for ${resourcePath}, ${e}`);
-                    }
-                }
-
-                // finally, push to the resource array
-                // bundled with the type and id to use for directing to the "Detail" page
-                if (data !== null) {
-                    let splitPath = path.split('/');
-                    fetched.push({
-                        data,
-                        type: splitPath[0], 
-                        id: splitPath[1],
-                    });
-                }
-            }
-            this.resources = fetched;
-
-            this.loading = false;
+        async handleClickItem() {
+            
         },
     },
 };

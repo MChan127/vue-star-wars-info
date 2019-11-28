@@ -13,6 +13,7 @@ export default new Vuex.Store({
         species: {},
         starships: {},
         vehicles: {},
+        planets: {},
         errors: [],
     },
     mutations: {
@@ -35,15 +36,25 @@ export default new Vuex.Store({
     getters: {
         getResource: function(state) {
             return (type, id) => {
+                // check for "Root" resources
                 if (!id) {
-                    return state[type] ? state[type] : null;
+                    return state[type] && 
+                        (Array.isArray(state[type]) ? 
+                            state[type].length > 0 :
+                            Object.entries(state[type]).length > 0) 
+                        ? state[type] : null;
                 }
+
+                // check for specific resources with an id
                 if (state[type] && state[type][id]) {
                     return state[type][id];
                 }
                 return null;
             };
-        }
+        },
+        getErrors: function(state) {
+            return state.errors;
+        },
     },
     actions: {
         /**
@@ -51,15 +62,13 @@ export default new Vuex.Store({
          * a specific id (e.g. /api/people/1)
          */
         async fetchResource({commit, getters}, {type, id = null}) {
-            if (id != null && typeof id != 'undefined') {
-                // check if type[id] already exists in the store
-                // if it's already been fetched before, just commit the
-                // existing data
-                let resource = null;
-                if (resource = getters.getResource(type, id)) {
-                    commit('setResource', {type, id, resource});
-                    return;
-                }
+            // check if resource already exists in the store
+            // if it's already been fetched before, just commit the
+            // existing data
+            let resource = null;
+            if (resource = getters.getResource(type, id)) {
+                commit('setResource', {type, id, resource});
+                return;
             }
             
             let res;
@@ -79,6 +88,7 @@ export default new Vuex.Store({
             for (id in pages) {
                 let data = pages[id];
                 data['lists'] = lists[id];
+                data['id'] = id;
                 commit('setResource', {
                     type,
                     id,
@@ -108,8 +118,7 @@ export default new Vuex.Store({
 *      },
 *      lists: {
 *          [id]: {
-*              type: 'Vehicles',
-*              paths: [path1, path2, ...],
+*              [type]: [path1, path2, ...],
 *          },
 *          ...
 *      }
@@ -156,12 +165,23 @@ function unpackResources(data, id = null) {
         const unpackedListItems = {};        
         for (let field in item) {
             let value = item[field];
-                                    
-            if (Array.isArray(value) && value.length > 1 && 
-                value[0].indexOf(baseUrl) > -1) {
-                
+                 
+            let urls;
+            // figure out if this is a collection of/singular resource URL
+            if (Array.isArray(value)) {
+                // if empty array, continue because it has no semantic benefit
+                // to the user
+                if (value.length < 1) {
+                    continue;
+                }
+
+                urls = value[0].indexOf(baseUrl) > -1 ? value : null;
+            } else if (typeof value == 'string' && value.indexOf(baseUrl) > -1) {
+                urls = [value];
+            }
+            if (urls) {
                 // loop through all resources
-                for (let path of value) {
+                for (let path of urls) {
                     // extract only the path from the entire string
                     path = path.replace(baseUrl, '');
                     let parts = null;                    
@@ -170,7 +190,7 @@ function unpackResources(data, id = null) {
                         // (including id and type)
                         continue;
                     }
-                    let id = parts[1];
+                    // let id = parts[1];
                     let type = parts[0];                    
                     
                     // create the array if it doesn't exist
@@ -178,7 +198,7 @@ function unpackResources(data, id = null) {
                         typeof unpackedListItems[type] === 'undefined') {
                         unpackedListItems[type] = [];
                     }
-                    unpackedListItems[type].push(id);
+                    unpackedListItems[type].push(path);
                 }
             } else {
                 unpackedFields[field] = value;

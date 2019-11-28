@@ -1,6 +1,7 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import Home from '@/views/Home.vue'
+import Vue from 'vue';
+import VueRouter from 'vue-router';
+import Home from '@/views/Home.vue';
+import Details from '@/views/Details.vue';
 import {RESOURCE_TYPES} from '@/utils/constants';
 
 Vue.use(VueRouter)
@@ -12,6 +13,19 @@ const routes = [
     name: 'home',
     component: Home,
   },
+  {
+    path: '/details/:type/:id',
+    name: 'details',
+    component: Details,
+  },
+  {
+    path: '*',
+    name: 'redirect',
+    component: () => {
+      router.replace('/');
+    },
+  },
+
   /* // films detail page
   {
     path: '/film/:id',

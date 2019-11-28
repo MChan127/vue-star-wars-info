@@ -1,4 +1,4 @@
-import axios, {get} from 'axios';
+import {get} from 'axios';
 
 const BASE_URL = 'https://swapi.co/api/';
 const AXIOS_CONFIG = {
