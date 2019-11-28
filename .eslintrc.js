@@ -1,5 +1,5 @@
 module.exports = {
-  root: true,
+  root: false,
   env: {
     node: true
   },
@@ -13,5 +13,9 @@ module.exports = {
   },
   parserOptions: {
     parser: 'babel-eslint'
+  },
+  rules: {
+    'indent': ['error', 4],
+    'comma-dangle': 0
   }
 }

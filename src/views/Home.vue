@@ -1,18 +1,49 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+    <div class="home">
+        <h1>Welcome to the Vue Star Wars Info application.</h1>
+
+        <div class="loading" v-if="loading">
+            <!-- TODO loading animation -->
+        </div>
+        <ResourceList 
+            title="Films"
+            v-if="!loading"
+            :forceShow="true"
+        />
+    </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+import {axiosGet as get} from "@/utils/global";
+import {mapActions, mapGetters} from 'vuex';
 
 export default {
-  name: 'home',
-  components: {
-    HelloWorld
-  }
+    data: function() {
+        return {
+            loading: false,
+        };
+    },
+    computed: {
+        ...mapGetters({
+            films: getResource('films'),
+        }),
+    },
+    mounted: async function() {
+        // TODO
+        // fetch from server cache first since this is the largest API call
+
+        if (initialData === null) {
+            this.loading = true;
+
+            this.loading = true;
+            await this.fetchResources();
+            this.loading = false;
+        }
+    },
+    methods: {
+        ... mapActions([
+            'fetchResources',
+        ]),
+    },
 }
 </script>
