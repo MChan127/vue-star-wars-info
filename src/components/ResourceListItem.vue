@@ -24,7 +24,7 @@ export default {
         // upon click, take user to "Detail" page for this type of item
         const detailPage = RESOURCE_TYPES[this.type].singular;
         handleClick() {
-            Router.push("${detailPage}/${this.id}");
+            Router.push(`${detailPage}/${this.id}`);
         },
     }
 };

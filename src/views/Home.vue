@@ -5,44 +5,52 @@
         <div class="loading" v-if="loading">
             <!-- TODO loading animation -->
         </div>
-        <ResourceList 
+        <!-- <resource-list 
             title="Films"
             v-if="!loading"
             :forceShow="true"
-        />
+            :resourcePaths="films"
+        /> -->
+        <div v-for="film in films" :key="film.title">
+            {{ film.title }}
+        </div>
     </div>
 </template>
 
 <script>
 import {axiosGet as get} from "@/utils/global";
 import {mapActions, mapGetters} from 'vuex';
+import ResourceList from "@/components/ResourceList.vue"; 
 
 export default {
+    components: {
+        'resource-list': ResourceList,
+    },
     data: function() {
         return {
+            films: [],
             loading: false,
         };
     },
     computed: {
-        ...mapGetters({
-            films: getResource('films'),
-        }),
+        ...mapGetters([
+            'getResource',
+        ]),
     },
     mounted: async function() {
         // TODO
         // fetch from server cache first since this is the largest API call
 
-        if (initialData === null) {
+        if (this.films === null || Object.entries(this.films).length < 1) {
             this.loading = true;
-
-            this.loading = true;
-            await this.fetchResources();
+            await this.fetchResource({type: 'films'});
+            this.films = this.getResource('films');
             this.loading = false;
         }
     },
     methods: {
-        ... mapActions([
-            'fetchResources',
+        ...mapActions([
+            'fetchResource',
         ]),
     },
 }

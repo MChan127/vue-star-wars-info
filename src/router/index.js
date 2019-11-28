@@ -12,7 +12,7 @@ const routes = [
     name: 'home',
     component: Home,
   },
-  // films detail page
+  /* // films detail page
   {
     path: '/film/:id',
     name: RESOURCE_TYPES['Film'].singular.toLowerCase(),
@@ -47,7 +47,7 @@ const routes = [
     path: '/planet/:id',
     name: RESOURCE_TYPES['Planet'].singular.toLowerCase(),
     component: Planet,
-  },
+  }, */
 ]
 
 const router = new VueRouter({

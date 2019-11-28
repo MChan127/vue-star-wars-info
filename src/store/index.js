@@ -17,9 +17,9 @@ export default new Vuex.Store({
     },
     mutations: {
         setResource: function(state, {type, id, resource}) {
-            // probably don't need to convert using RESOURCE_TYPE since the types are all 
+            // probably don't need to convert using RESOURCE_TYPES since the types are all 
             // already in plural format, but just in case
-            state[RESOURCE_TYPE[type]['plural'].toLowerCase()][id] = resource;
+            state[RESOURCE_TYPES[type]['plural'].toLowerCase()][id] = resource;
             return state;
         },
         addError: function(state, err) {
@@ -35,6 +35,9 @@ export default new Vuex.Store({
     getters: {
         getResource: function(state) {
             return (type, id) => {
+                if (!id) {
+                    return state[type] ? state[type] : null;
+                }
                 if (state[type] && state[type][id]) {
                     return state[type][id];
                 }
@@ -58,12 +61,11 @@ export default new Vuex.Store({
                     return;
                 }
             }
-
-            // 
-            let result;
+            
+            let res;
             try {
-                await get("/${type}" + (id ? "/${id}" : ""), {promisify: true});
-            } catch (err) {
+                res = await get(`/${type}` + (id ? `/${id}` : ""), {promisify: true});
+            } catch (err) {                
                 commit('addError', err);
             }
 
@@ -120,9 +122,8 @@ function unpackResources(data, id = null) {
     // TODO unpack pagination & return it as well
     // ...
 
-    // check if object or array
-    // if array, we need to loop through and unpack _all_ items
-    if (Array.isArray(data) && data.length > 1) {
+    // check if we're fetching a type of resource or a specific item with id
+    if (!id) {
         unpackedPages = [];
         unpackedLists = {};
         let results = data.results;
@@ -152,27 +153,33 @@ function unpackResources(data, id = null) {
     */
     function unpack(item) {
         const unpackedFields = {};
-        const unpackedListItems = {};
-        for (field in item) {
+        const unpackedListItems = {};        
+        for (let field in item) {
             let value = item[field];
-                        
+                                    
             if (Array.isArray(value) && value.length > 1 && 
                 value[0].indexOf(baseUrl) > -1) {
-                // extract only the path from the entire string
-                let path = value[0].replace(baseUrl, ''),
-                    parts = null;
-                if ((parts = path.split('/')).length != 2) {
-                    // invalid path, should have exactly two parts (id and type)
-                    continue;
-                }
-                let id = parts[1];
-                let type = parts[0];
                 
-                // create the array if it doesn't exist
-                if (!unpackedListItems[type]) {
-                    unpackedListItems[type] = [];
+                // loop through all resources
+                for (let path of value) {
+                    // extract only the path from the entire string
+                    path = path.replace(baseUrl, '');
+                    let parts = null;                    
+                    if ((parts = path.split('/')).length != 3) {
+                        // invalid path, should have exactly three parts 
+                        // (including id and type)
+                        continue;
+                    }
+                    let id = parts[1];
+                    let type = parts[0];                    
+                    
+                    // create the array if it doesn't exist
+                    if (unpackedListItems[type] === null ||
+                        typeof unpackedListItems[type] === 'undefined') {
+                        unpackedListItems[type] = [];
+                    }
+                    unpackedListItems[type].push(id);
                 }
-                unpackedListItems[type].push(id);
             } else {
                 unpackedFields[field] = value;
             }

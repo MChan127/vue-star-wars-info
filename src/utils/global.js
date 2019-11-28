@@ -2,8 +2,7 @@ import axios, {get} from 'axios';
 
 const BASE_URL = 'https://swapi.co/api/';
 const AXIOS_CONFIG = {
-    baseUrl: BASE_URL,
-
+    baseURL: BASE_URL,
 };
 
 /**
@@ -22,7 +21,7 @@ function defaultErrHandler(err) {
  * 
  * If promisify = true, overwrite callbacks and return a promise instead
  */
-function axiosGet(path, {callback, errCallback, promisify = false}) {
+const axiosGet = function(path, {callback, errCallback, promisify = false}) {
     if (promisify !== false) {
         return new Promise(execute);
     } else {
@@ -41,8 +40,8 @@ function axiosGet(path, {callback, errCallback, promisify = false}) {
         }
 
         // actual AJAX request
-        get(path).then(res => {
-            if (res.status == 200 && res.statusText == 'OK') {
+        get(path, AXIOS_CONFIG).then(res => {
+            if (res.status == 200 || res.statusText == 'OK') {
                 callback(res.data);   
             } else {
                 if (errCallback) {
@@ -61,8 +60,7 @@ function axiosGet(path, {callback, errCallback, promisify = false}) {
     }
 }
 
-export default {
+export {
     BASE_URL,
     axiosGet,
-    getDetailPageName,
 };

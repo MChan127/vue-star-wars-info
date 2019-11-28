@@ -11,7 +11,8 @@
             </div>
             <ul class="resource-list__list">
                 <li v-for="resource in resources" 
-                    :key={title + '_' + (resource.name ? resource.name : resource.title)}
+                    :key="title + '_' + (resource.name ? resource.name : resource.title)"
+                    @click="handleClick"
                 >
                     <ResourceListItem :resource="resource" />
                 </li>
@@ -73,7 +74,7 @@ export default {
                     try {
                         data = await get(path, {promisify: true});
                     } catch (e) {
-                        this.$store.errors.push("Error fetching for ${resourcePath}, ${e}");
+                        this.$store.errors.push(`Error fetching for ${resourcePath}, ${e}`);
                     }
                 }
 

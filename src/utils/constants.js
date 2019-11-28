@@ -32,6 +32,6 @@ const RESOURCE_TYPES = {
     },
 };
 
-export default {
+export {
     RESOURCE_TYPES,
 };
