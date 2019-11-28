@@ -2,20 +2,18 @@
     <div class="home">
         <h1>Welcome to the Vue Star Wars Info application.</h1>
 
+        <div class="search-films" v-if="!loading">
+            <span>Search Title or Opening Crawl: </span> 
+            <input type="text" v-model="search" />
+        </div>
         <loading-anim :show="loading" />
         <ul>
-            <li v-for="film in films" :key="film.title" @click="handleClick(film.id)">
+            <li v-for="film in filteredFilms" :key="film.title" @click="handleClick(film.id)">
                 {{ film.title }}
             </li>
         </ul>
     </div>
 </template>
-
-<style scoped>
-ul {
-    list-style-type: none;
-}
-</style>
 
 <script>
 import {axiosGet as get} from "@/utils/global";
@@ -31,14 +29,24 @@ export default {
     },
     data: function() {
         return {
-            films: [],
+            films: {},
+            filteredFilms: {},
             loading: false,
+            search: '',
         };
     },
     computed: {
         ...mapGetters([
             'getResource',
         ]),
+    },
+    watch: {
+        films: function() {
+            this.updateSearchFilter();
+        },
+        search: function() {
+            this.updateSearchFilter();
+        },
     },
     mounted: async function() {
         // TODO
@@ -55,6 +63,25 @@ export default {
         ]),
         handleClick(id) {
             Router.push(`/details/films/${id}`);
+        },
+        updateSearchFilter() {
+            console.log('search', this.search, this.films);
+            if (!this.films || typeof this.films !== 'object' ||
+                !this.search || this.search.trim().length < 1) {
+                this.filteredFilms = this.films;
+                return;
+            }
+            const filtered = {};
+            for (let id in this.films) {
+                let item = this.films[id];
+                if ((!item.title && !item.opening_crawl) ||
+                    item.title.toLowerCase().indexOf(this.search.toLowerCase()) > -1 ||
+                    item.opening_crawl.toLowerCase().indexOf(this.search.toLowerCase()) > -1) {
+                    filtered[id] = item;
+                }   
+            }
+            console.log(filtered);
+            this.filteredFilms = filtered;
         },
     },
 }

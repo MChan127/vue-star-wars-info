@@ -47,7 +47,6 @@
     }
 }
 .fields ul {
-    list-style-type: none;
     text-align: left;
 }
 </style>

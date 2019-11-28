@@ -23,8 +23,8 @@
 .resource-list__container.hidden {
     display: none;
 }
-.resource-list__list {
-    list-style-type: none;
+.resource-list__title {
+    cursor: pointer;
 }
 </style>
 
