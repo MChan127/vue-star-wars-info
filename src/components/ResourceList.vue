@@ -79,6 +79,11 @@ export default {
         ...mapMutations([
             'addError',
         ]),
+        /**
+         * The list is merely a display of the resource types (People, Vehicles, etc.) until
+         * the user clicks on a list item, then it fetches data under that category.
+         *
+         */
         async handleClick() {
             if (this.resources === null) {
                 const that = this;

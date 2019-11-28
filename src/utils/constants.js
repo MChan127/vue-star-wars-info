@@ -1,8 +1,7 @@
 /**
  * Standardization of the different resource types along with
  * their mapped representations in this app, so that we can
- * consistently refer to them (and their corresponding 
- * components) by the same names, in both converted singular
+ * consistently refer to them by the same names, in both converted singular
  * and plural form
  */
 const RESOURCE_TYPES = {

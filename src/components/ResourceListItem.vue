@@ -25,7 +25,10 @@ export default {
         },
     },
     methods: {
-        // upon click, take user to "Detail" page for this type of item
+        /**
+         * Upon click, the user is taken laterally to other detail pages with
+         * their own links to other resources
+         */
         handleClick(id) {
             const detailPage = RESOURCE_TYPES[this.type].plural.toLowerCase();
             const newRoute = `/details/${detailPage}/${id}`;

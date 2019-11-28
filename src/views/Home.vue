@@ -11,6 +11,12 @@
     </div>
 </template>
 
+<style scoped>
+ul {
+    list-style-type: none;
+}
+</style>
+
 <script>
 import {axiosGet as get} from "@/utils/global";
 import {mapActions, mapGetters} from 'vuex';
@@ -38,12 +44,10 @@ export default {
         // TODO
         // fetch from server cache first since this is the largest API call
 
-        // if (this.films === null || Object.entries(this.films).length < 1) {
         this.loading = true;
         await this.fetchResource({type: 'films'});
         this.films = this.getResource('films');
         this.loading = false;
-        // }
     },
     methods: {
         ...mapActions([

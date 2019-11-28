@@ -65,8 +65,11 @@ export default new Vuex.Store({
             // check if resource already exists in the store
             // if it's already been fetched before, just commit the
             // existing data
+            // edit: need to fetch root objects every time because the app
+            // can mistakenly think it's fetched _all_ films even though it hasn't
+            // and the key is populated 
             let resource = null;
-            if (resource = getters.getResource(type, id)) {
+            if (id && (resource = getters.getResource(type, id))) {
                 commit('setResource', {type, id, resource});
                 return;
             }

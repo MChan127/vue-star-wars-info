@@ -25,8 +25,9 @@ const routes = [
       router.replace('/');
     },
   },
-
-  /* // films detail page
+ 
+  /* 
+  // films detail page
   {
     path: '/film/:id',
     name: RESOURCE_TYPES['Film'].singular.toLowerCase(),
